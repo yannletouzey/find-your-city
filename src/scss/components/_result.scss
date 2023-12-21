@@ -1,0 +1,29 @@
+.result {
+    background-color: #FAF9F5;
+    li {
+        list-style-type: none;
+        border: 1px solid #000;
+        background-color: rgb(212, 212, 212);
+        padding: 1rem;
+        @media screen and (min-width: 768px) {
+            display: flex;
+            justify-content: space-around;
+        }
+    }
+    li:nth-child(2n+1) {
+        background-color: #fff;
+    }
+    li:last-child {
+        border-radius: 0 0 1.25rem 1.25rem;
+    }
+    p {
+        padding: 0.5rem;
+        text-align: center;
+        &:not(:last-child) {
+            border-bottom: 1px solid #000;
+            @media screen and (min-width: 768px) {
+                border-bottom: none;
+            }
+        }
+    }
+}

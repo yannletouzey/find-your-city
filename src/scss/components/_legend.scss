@@ -1,0 +1,13 @@
+.legend {
+    width: 90%;
+    margin: auto;
+    li {
+        padding: 0.1rem 0.5rem;
+        list-style-type: none;
+        padding-left: 0.5rem;
+    }
+    li:first-child {
+        padding: 0.5rem;
+        text-align: center;
+    }
+}

@@ -1,0 +1,12 @@
+header {
+    display: flex;
+    align-items: center;
+    height: 4rem;
+    margin-bottom: 2rem;
+    h1 {
+        margin: 0 1rem;
+        text-align: center;
+        border-bottom: 2px solid #ccc;
+        width: 100%;
+    }
+}
