@@ -3,9 +3,7 @@ import { indexWeather } from './nomenclature';
 import { Map } from './Map';
 import { Legend } from './Legend';
 import { popData } from './popData';
-
-console.log(indexWeather);
-
+import { departementsRegion } from '../departements-region';
 
 function App() {
   const KEY_API_WEATHER = import.meta.env.VITE_KEY_API_WEATHER;
@@ -86,10 +84,20 @@ function App() {
   const renderWeather = (weatherCode) => {
     const weatherInfo = indexWeather.find((item) => item[0] === weatherCode);
     if (weatherInfo) {
-      return `${weatherInfo[1]} ${weatherInfo[2] || ''}`;
+      return `${weatherInfo[1]} ${weatherInfo[2]}`;
     }
     return 'Non disponible';
   };
+
+  const getWeatherGradient = (weatherCode) => {
+    const weatherInfo = indexWeather.find((item) => item[0] === weatherCode);
+    if (weatherInfo && weatherInfo[3]) {
+      const [color1, color2] = weatherInfo[3];
+      return `linear-gradient(135deg, ${color1}, ${color2})`;
+    }
+    return 'linear-gradient(135deg, #E0E0E0, #B0BEC5)';
+  };
+
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -120,6 +128,11 @@ function App() {
       }
     });
   }, [dataApi]);
+
+  function formatNumber(value) {
+    if (isNaN(value)) return value;
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -154,27 +167,63 @@ function App() {
         </form>
 
         {loading && <p>Chargement...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: 'lightcoral' }}>{error}</p>}
 
-        {dataWeather.length > 0 && dataWeather.map((item, id) => (
-          <ul key={id} style={{ marginTop: '1rem' }} className="card">
-            <li>Nom : <b>{item.nom}</b></li>
-            <li>Code INSEE : <b>{item.code}</b></li>
-            <li>Département : <b>{item.codeDepartement}</b></li>
-            <li className="postals">
-              <ul>
-                <li className="postals-text">📭 Codes postaux :</li>
-                {item.postalCode.map((cp, index) => (
-                  <li key={index}><b>{cp}</b><span>,</span></li>
-                ))}
-              </ul>
-            </li>
-            <li>👤 Population : <b>{item.pop}</b> {item.pop > 1 ? 'habitants' : 'habitant'}</li>
-            <li>🌡️ Température : min {item.forecast[0]?.tmin}°C - max {item.forecast[0]?.tmax}°C</li>
-            <li>🌦️ Temps : {renderWeather(item.forecast[0]?.weather)}</li>
-            {console.log(item.forecast[0]?.weather)}
-          </ul>
-        ))}
+        {dataWeather.length > 0 && dataWeather.map((item, id) => {
+          const weatherCode = item.forecast[0]?.weather;
+          const gradient = getWeatherGradient(weatherCode);
+          const weatherLabel = renderWeather(weatherCode);
+          const departement = departementsRegion.find((dep) => dep.num_dep == item.codeDepartement);
+          const popDepartement = popData.find((pop) => pop.code_departement === item.codeDepartement);
+          
+          return (
+            <ul
+              key={id}
+              className="card"
+              style={{
+                marginTop: '1rem',
+                padding: '1rem',
+                borderRadius: '1rem',
+                color: 'white',
+                background: gradient,
+                boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                transition: 'background 0.5s ease'
+              }}
+            >
+              <li>🏙️ Nom : <b>{item.nom}</b></li>
+              <li>📍 Département : <b>{item.codeDepartement}</b> - <b>{departement.dep_name}</b></li>
+              <li>🌐 Région : <b>{departement.region_name}</b></li>
+              <li className="postals">
+                <ul style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', listStyle: 'none', padding: 0 }}>
+                  <li className="postals-text">{item.postalCode.length > 1 ? '📭 Codes postaux : ' : '📭 Code postal : '}</li>
+                  {item.postalCode.map((cp, index) => (
+                    <li key={index}><b>{cp}</b>{index < item.postalCode.length - 1 && <span>,</span>}</li>
+                  ))}
+                </ul>
+              </li>
+              <li>🆔 Code INSEE : <b>{item.code}</b></li>
+              <li>🌍 Coordonnées :
+                <ul className='coord'>
+                  <li>Latitude : <b>{item.forecast[0].latitude}</b></li>
+                  <li>Longitude : <b>{item.forecast[0].longitude}</b></li>
+                </ul>
+              </li>
+              <li>👤 Population : 
+                <ul className='pop'>
+                  <li>de la ville <b>{formatNumber(item.pop)}</b> {item.pop > 1 ? 'habitants' : 'habitant'}</li>
+                  <li>du département : <b>{formatNumber(popDepartement.population)}</b> {popDepartement.population > 1 ? 'habitants' : 'habitant'}</li>
+                </ul>
+              </li>
+              <li>🌡️ Température :
+                <ul className='temp'>
+                  <li>min {item.forecast[0]?.tmin}°C</li>
+                  <li>max {item.forecast[0]?.tmax}°C</li>
+                </ul>
+              </li>
+              <li>🌦️ Temps : {weatherLabel}</li>
+            </ul>
+          );
+        })}
       </div>
     </div>
   );
