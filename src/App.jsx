@@ -4,6 +4,9 @@ import { Map } from './Map';
 import { Legend } from './Legend';
 import { popData } from './popData';
 
+console.log(indexWeather);
+
+
 function App() {
   const KEY_API_WEATHER = import.meta.env.VITE_KEY_API_WEATHER;
 
@@ -44,7 +47,7 @@ function App() {
     try {
       const response = await fetch(`https://api.meteo-concept.com/api/forecast/daily?token=${KEY_API_WEATHER}&insee=${code}`);
       if (!response.ok) throw new Error('Erreur lors de la récupération de la météo');
-      const data = await response.json();
+      const data = await response.json();      
       return { nom: nameCity, code, forecast: data.forecast, codeDepartement, postalCode, pop };
     } catch (err) {
       console.error(err);
@@ -81,8 +84,8 @@ function App() {
   }, [dataApi]);
 
   const renderWeather = (weatherCode) => {
-    const weatherInfo = indexWeather[weatherCode];
-    if (Array.isArray(weatherInfo)) {
+    const weatherInfo = indexWeather.find((item) => item[0] === weatherCode);
+    if (weatherInfo) {
       return `${weatherInfo[1]} ${weatherInfo[2] || ''}`;
     }
     return 'Non disponible';
@@ -169,6 +172,7 @@ function App() {
             <li>👤 Population : <b>{item.pop}</b> {item.pop > 1 ? 'habitants' : 'habitant'}</li>
             <li>🌡️ Température : min {item.forecast[0]?.tmin}°C - max {item.forecast[0]?.tmax}°C</li>
             <li>🌦️ Temps : {renderWeather(item.forecast[0]?.weather)}</li>
+            {console.log(item.forecast[0]?.weather)}
           </ul>
         ))}
       </div>
